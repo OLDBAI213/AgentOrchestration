@@ -13,7 +13,17 @@ class OrchestratorClient:
         self.api_key = api_key or os.getenv("AO_API_KEY", "")
         self._session = None
 
+    def _validate_api_key(self) -> None:
+        """Validate that API key is set before making requests."""
+        if not self.api_key or not self.api_key.strip():
+            raise ValueError(
+                "AO_API_KEY is not set. Please set the AO_API_KEY environment variable "
+                "or pass api_key to OrchestratorClient(). "
+                "You can get your API key from https://agent-orchestrator.io/settings"
+            )
+
     def _request(self, method: str, path: str, data: Dict = None) -> Dict:
+        self._validate_api_key()
         url = f"{self.base_url}/api/v2{path}"
         headers = {
             "Authorization": f"Bearer {self.api_key}",
