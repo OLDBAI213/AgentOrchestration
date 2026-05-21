@@ -7,6 +7,11 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
 
+class AuthenticationError(Exception):
+    """Raised when API key is missing or invalid."""
+    pass
+
+
 class OrchestratorClient:
     def __init__(self, base_url: str = None, api_key: str = None):
         self.base_url = base_url or os.getenv("AO_API_URL", "https://api.agent-orchestrator.io")
@@ -14,12 +19,12 @@ class OrchestratorClient:
         self._session = None
 
     def _validate_api_key(self) -> None:
-        """Validate that API key is set before making requests."""
+        """Validate that API key is set and non-empty before making requests."""
         if not self.api_key or not self.api_key.strip():
-            raise ValueError(
-                "AO_API_KEY is not set. Please set the AO_API_KEY environment variable "
-                "or pass api_key to OrchestratorClient(). "
-                "You can get your API key from https://agent-orchestrator.io/settings"
+            raise AuthenticationError(
+                "AO_API_KEY is not set or is empty. Please set the AO_API_KEY "
+                "environment variable or pass api_key to OrchestratorClient(). "
+                "Get your API key from: https://agent-orchestrator.io/settings"
             )
 
     def _request(self, method: str, path: str, data: Dict = None) -> Dict:
